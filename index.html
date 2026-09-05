@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PROJECT AI 〜人類最後のアップデートが始まる〜 | アーカイブ</title>
+  
+  <!-- Webフォント -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700;900&family=Noto+Sans+JP:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  
+  <!-- メインスタイルシート -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="cyber-bg">
+
+  <!-- ====================================================================== -->
+  <!-- 演出オーバーレイ                                                       -->
+  <!-- ====================================================================== -->
+  <div id="effect-overlay-purged" class="effect-fullscreen-overlay effect-purged hidden">
+    <div class="effect-content">
+      <span class="material-symbols-outlined icon-hero icon-success">task_alt</span>
+      <h1 class="effect-title text-success font-cyber">SYSTEM PURGED</h1>
+      <p class="effect-subtitle font-cyber">防壁突破 // 承認プロトコル完了</p>
+    </div>
+  </div>
+
+  <div id="effect-overlay-breach" class="effect-fullscreen-overlay effect-breach hidden">
+    <div class="effect-content">
+      <span class="material-symbols-outlined icon-hero icon-danger">fmd_bad</span>
+      <h1 class="effect-title text-danger font-cyber">DEFENSE BREACHED</h1>
+      <p class="effect-subtitle font-cyber">防壁突破失敗 // 次のノードへ移行</p>
+    </div>
+  </div>
+
+  <!-- 画像・メディア全画面モーダル -->
+  <div id="media-fullscreen-modal" class="modal-overlay modal-media hidden" onclick="App.closeMediaFullscreen()">
+    <button type="button" class="btn-close-fullscreen" aria-label="閉じる">
+      <span class="material-symbols-outlined icon-lg">close</span>
+    </button>
+    <div id="fullscreen-media-content" class="fullscreen-media-wrapper"></div>
+  </div>
+
+  <!-- 設定モーダル (ローカル保存) -->
+  <div id="settings-modal" class="modal-overlay hidden">
+    <div class="card settings-modal-card cyber-border-accent">
+      <div class="modal-header">
+        <div class="modal-title-box">
+          <span class="material-symbols-outlined icon-md icon-accent">tune</span>
+          <h3 class="modal-title font-cyber">SYSTEM CONFIG // 作戦プロトコル設定</h3>
+        </div>
+        <button type="button" class="btn-icon-close" onclick="App.closeSettings()">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <form id="form-settings" onsubmit="App.saveSettings(event)">
+        <div class="form-group">
+          <label class="form-label font-cyber" for="set-time-limit">1問の制限時間</label>
+          <select id="set-time-limit" class="form-input font-cyber">
+            <option value="0">無制限 (タイマーなし)</option>
+            <option value="30">30秒 (超高速)</option>
+            <option value="60" selected>60秒 (本番標準)</option>
+            <option value="90">90秒 (じっくり)</option>
+            <option value="120">120秒 (長め)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label font-cyber" for="set-penalty-rule">誤答時ペナルティ</label>
+          <select id="set-penalty-rule" class="form-input font-cyber">
+            <option value="instant_out" selected>誤答即アウト (即座に不正解終了)</option>
+            <option value="time_deduct">時間減算ペナルティ (-15秒)</option>
+            <option value="none">ペナルティなし (時間内なら何度でも)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label font-cyber" for="set-sound">サウンド効果 (SE)</label>
+          <select id="set-sound" class="form-input font-cyber">
+            <option value="on" selected>有効 (ON)</option>
+            <option value="off">無効 (OFF / ミュート)</option>
+          </select>
+        </div>
+
+        <div class="settings-actions mt-3">
+          <button type="submit" class="btn btn-primary font-cyber full-width">
+            <span class="material-symbols-outlined icon-sm">save</span> 設定を端末に保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 1. メイン画面: モード＆難易度選択 (ホーム)                           -->
+  <!-- ====================================================================== -->
+  <div id="screen-home" class="screen-container">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="badge badge-admin font-cyber">
+          <span class="material-symbols-outlined icon-sm">terminal</span> PROJECT AI ARCHIVE
+        </span>
+      </div>
+      <div class="header-right-actions">
+        <button type="button" class="btn btn-manual btn-sm font-cyber" onclick="App.openSettings()">
+          <span class="material-symbols-outlined icon-sm">settings</span> ルール設定
+        </button>
+      </div>
+    </header>
+
+    <main class="home-main-card card cyber-border-accent text-center">
+      <div class="cyber-glitch-badge">MEMORIAL EDITION</div>
+      <h1 class="title font-cyber">PROJECT AI</h1>
+      <p class="subtitle font-cyber">〜人類最後のアップデートが始まる〜</p>
+
+      <div class="current-rule-summary font-cyber mb-4">
+        <span>⏱ 制限時間: <strong id="summary-timelimit" class="text-highlight">60秒</strong></span>
+        <span>⚡ 誤答: <strong id="summary-penalty" class="text-warning">即アウト</strong></span>
+      </div>
+
+      <!-- 3問挑戦 難易度選択 -->
+      <section class="mode-select-section">
+        <h2 class="section-sub-title font-cyber">
+          <span class="material-symbols-outlined icon-sm icon-accent">play_circle</span> 3問チャレンジ (難易度選択)
+        </h2>
+        <p class="mode-desc">第1問〜第3問から各1問ずつ、計3問がランダムに出題されます。</p>
+
+        <div class="diff-btn-grid">
+          <button type="button" class="btn btn-diff-select diff-easy" onclick="App.startChallenge('easy')">
+            <div class="diff-chip font-cyber">▲ EASY</div>
+            <div class="diff-name">初級プロトコル</div>
+            <div class="diff-hint text-muted">ひらめき・入門向け</div>
+          </button>
+
+          <button type="button" class="btn btn-diff-select diff-normal" onclick="App.startChallenge('normal')">
+            <div class="diff-chip font-cyber">■ NORMAL</div>
+            <div class="diff-name">標準プロトコル</div>
+            <div class="diff-hint text-muted">文化祭本番の標準難易度</div>
+          </button>
+
+          <button type="button" class="btn btn-diff-select diff-hard" onclick="App.startChallenge('hard')">
+            <div class="diff-chip font-cyber">● HARD</div>
+            <div class="diff-name">上級プロトコル</div>
+            <div class="diff-hint text-muted">高度な謎解き・思考力</div>
+          </button>
+
+          <button type="button" class="btn btn-diff-select diff-ex" onclick="App.startChallenge('ex')">
+            <div class="diff-chip font-cyber">★ EX (EXTRA)</div>
+            <div class="diff-name">最難関プロトコル</div>
+            <div class="diff-hint text-muted">論理パズル・超難問</div>
+          </button>
+
+          <button type="button" class="btn btn-diff-select diff-mix" onclick="App.startChallenge('mix')">
+            <div class="diff-chip font-cyber">🎲 ALL MIX</div>
+            <div class="diff-name">全難易度ランダム</div>
+            <div class="diff-hint text-muted">何が出るかはお楽しみ</div>
+          </button>
+        </div>
+      </section>
+
+      <hr class="cyber-divider">
+
+      <!-- 全問アーカイブ閲覧ボタン -->
+      <section class="archive-section">
+        <button type="button" class="btn btn-secondary font-cyber btn-lg full-width" onclick="App.showArchive()">
+          <span class="material-symbols-outlined icon-md">inventory_2</span> 全問題データベース (カンニング＆見返し)
+        </button>
+      </section>
+    </main>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 2. クイズ解答画面                                                      -->
+  <!-- ====================================================================== -->
+  <div id="screen-quiz" class="screen-container hidden">
+    <header class="quiz-header">
+      <div class="quiz-header-info">
+        <span id="quiz-node-badge" class="badge badge-quiz font-cyber">NODE 1 [ALPHA]</span>
+        <span id="quiz-progress-badge" class="group-pill font-mono">QUESTION 1 / 3</span>
+      </div>
+      <div class="header-right-actions">
+        <button type="button" class="btn btn-outline-danger btn-sm font-cyber" onclick="App.abortToHome()">
+          <span class="material-symbols-outlined icon-xs">close</span> 中断
+        </button>
+      </div>
+    </header>
+
+    <div class="quiz-top-bar">
+      <div class="top-bar-left">
+        <span id="quiz-diff-tag" class="difficulty-tag font-cyber">NORMAL</span>
+      </div>
+      <div class="timer-container font-mono" id="quiz-timer-box">
+        <span class="material-symbols-outlined icon-sm">timer</span>
+        <span id="quiz-timer" class="timer-text">01:00</span>
+      </div>
+    </div>
+
+    <!-- 問題カード -->
+    <div class="card question-card cyber-border">
+      <div class="question-header">
+        <span class="question-id-badge font-mono" id="quiz-q-id">Q1-01</span>
+        <span class="media-zoom-hint text-muted"><span class="material-symbols-outlined icon-xs">zoom_in</span> 画像タップで拡大</span>
+      </div>
+      <p class="question-text" id="quiz-question-text">問題文</p>
+      <div id="quiz-media-container" class="question-media-container hidden"></div>
+    </div>
+
+    <!-- ヒントアコーディオン -->
+    <div class="hint-section cyber-border-sub">
+      <div class="hint-header">
+        <h3 class="hint-heading font-cyber">
+          <span class="material-symbols-outlined icon-sm icon-gold">lightbulb</span> AI脆弱性解析ヒント
+        </h3>
+        <button type="button" id="btn-reveal-hint" class="btn btn-secondary btn-sm font-cyber" onclick="App.revealNextHint()">
+          <span class="material-symbols-outlined icon-xs">visibility</span> ヒント開示
+        </button>
+      </div>
+      <div id="quiz-hint-list" class="hint-list"></div>
+    </div>
+
+    <!-- 答え・解説表示アコーディオン (任意表示) -->
+    <div id="answer-reveal-box" class="answer-reveal-box hidden">
+      <div class="card cyber-border-warning p-3">
+        <div class="ans-heading font-cyber text-warning">
+          <span class="material-symbols-outlined icon-sm">key</span> 模範解答 & 解説
+        </div>
+        <p class="ans-text mt-1">模範解答: <strong id="quiz-ans-text" class="text-highlight font-mono font-bold">--</strong></p>
+        <p class="ans-exp text-muted mt-1" id="quiz-ans-exp">--</p>
+      </div>
+    </div>
+
+    <!-- アクションバー -->
+    <div class="staff-action-bar-cyber-two">
+      <button type="button" class="btn btn-cyber-judge btn-cyber-wrong-huge font-cyber" onclick="App.handleJudge(false)" title="誤答">
+        <span class="material-symbols-outlined icon-lg">cancel</span>
+        <span>❌ 不正解</span>
+      </button>
+
+      <button type="button" class="btn btn-secondary font-cyber" onclick="App.toggleAnswerVisibility()" style="min-height:76px;">
+        <span class="material-symbols-outlined icon-md">visibility</span>
+        <span id="label-toggle-ans">答えを見る</span>
+      </button>
+
+      <button type="button" class="btn btn-cyber-judge btn-cyber-correct-huge font-cyber" onclick="App.handleJudge(true)" title="正解">
+        <span class="material-symbols-outlined icon-lg">task_alt</span>
+        <span>⭕ 正解！</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 3. 結果リザルト画面                                                    -->
+  <!-- ====================================================================== -->
+  <div id="screen-result" class="screen-container hidden">
+    <header class="app-header">
+      <div class="header-left">
+        <span class="badge badge-exit font-cyber">
+          <span class="material-symbols-outlined icon-sm">sports_score</span> MISSION RESULT // 作戦結果
+        </span>
+      </div>
+    </header>
+
+    <main class="card cyber-border-accent text-center mb-4">
+      <div class="cyber-glitch-badge success">UPDATE COMPLETED</div>
+      <h2 class="title font-cyber mt-2">防壁突破結果</h2>
+      
+      <!-- スコアバッジ -->
+      <div class="result-total-score-badge font-cyber my-3" style="display:inline-block;">
+        <span class="score-num font-mono" id="res-score-val">0</span>
+        <span class="score-unit">PTS</span>
+      </div>
+
+      <p class="res-msg font-cyber" id="res-msg-text">全3問のハッキングが終了しました</p>
+
+      <!-- EX合言葉バナー (全問正解時など) -->
+      <div id="res-ex-banner" class="banner-ex-qualified-mini font-cyber mt-3 hidden">
+        <span class="material-symbols-outlined icon-md">stars</span>
+        <div class="flex-1 text-left">
+          <strong>EX MODE OVERRIDE GRANTED!</strong><br>
+          <span class="ex-sub-text">解放合言葉: </span>
+          <strong class="secret-word-mini">しらす</strong>
+        </div>
+      </div>
+    </main>
+
+    <!-- 3問の詳細解説カード一覧 -->
+    <h3 class="font-cyber font-bold mb-2" style="color: #cbd5e1;">
+      <span class="material-symbols-outlined icon-sm text-highlight">quiz</span> 各問の正誤・解説詳細
+    </h3>
+    <div id="result-breakdown-list" class="exit-results-cards-grid"></div>
+
+    <div class="result-actions-bottom text-center py-4">
+      <button type="button" class="btn btn-primary font-cyber btn-lg" onclick="App.goHome()">
+        <span class="material-symbols-outlined icon-sm">replay</span> もう一度挑戦する
+      </button>
+      <button type="button" class="btn btn-secondary font-cyber btn-lg" onclick="App.showArchive()">
+        <span class="material-symbols-outlined icon-sm">inventory_2</span> 全問題を見る
+      </button>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- 4. 全問題アーカイブ一覧画面                                            -->
+  <!-- ====================================================================== -->
+  <div id="screen-archive" class="screen-container hidden">
+    <header class="app-header">
+      <div class="header-left">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="App.goHome()">
+          <span class="material-symbols-outlined icon-sm">arrow_back</span>
+        </button>
+        <span class="badge badge-manager font-cyber">
+          <span class="material-symbols-outlined icon-sm">menu_book</span> 全問アーカイブDB
+        </span>
+      </div>
+      <div class="header-right-actions">
+        <span id="archive-count" class="badge badge-secondary font-mono">0 問</span>
+      </div>
+    </header>
+
+    <div class="db-control-container">
+      <div class="db-filter-bar">
+        <button type="button" class="db-filter-chip active" onclick="App.filterArchive('all', this)">全問</button>
+        <button type="button" class="db-filter-chip" onclick="App.filterArchive('easy', this)">EASY</button>
+        <button type="button" class="db-filter-chip" onclick="App.filterArchive('normal', this)">NORMAL</button>
+        <button type="button" class="db-filter-chip" onclick="App.filterArchive('hard', this)">HARD</button>
+        <button type="button" class="db-filter-chip" onclick="App.filterArchive('ex', this)">EX</button>
+      </div>
+    </div>
+
+    <main id="archive-cards-list" class="db-cards-container mt-3"></main>
+  </div>
+
+  <!-- スクリプト読み込み -->
+  <script src="js/questions.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
