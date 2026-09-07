@@ -158,7 +158,7 @@ const QUESTIONS_MASTER = [
     room: 2,
     difficulty: "normal",
     question_text: "察しろ（迷路の先にある言葉は？）",
-    media_url: "media/5.nerfed.png",
+    media_url: "media/5.png",
     answer: "スウガク",
     hints: ["イラストは何を表してる？", "名前から何か気づかない？"],
     explanation: "イラストがあらわすことばには「トリ」とか「ムシ」が入ってるので、その文字を「無視」して迷路を進む。"
